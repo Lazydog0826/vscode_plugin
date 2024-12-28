@@ -34,9 +34,27 @@
     "commands": [
       {
         "command": "et.run",
-        "title": "翻译警告与错误"
+        "title": "显示警告与错误"
+      },
+      {
+        "command": "et.clear",
+        "title": "隐藏警告与错误"
       }
-    ]
+    ],
+    "menus": {
+      "editor/context": [
+        {
+          "command": "et.run",
+          "group": "navigation",
+          "when": "editorTextFocus"
+        },
+        {
+          "command": "et.clear",
+          "group": "navigation",
+          "when": "editorTextFocus"
+        }
+      ]
+    }
   },
   "scripts": {
     "vscode:prepublish": "npm run package",

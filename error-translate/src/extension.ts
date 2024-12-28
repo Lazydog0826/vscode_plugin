@@ -18,12 +18,25 @@ interface MessageModel {
   type: vscode.DiagnosticSeverity;
 }
 
+interface TranslationResult {
+  from: string;
+  to: string;
+  trans_result: Array<{
+    src: string;
+    dst: string;
+  }>;
+}
+
 export function activate(context: vscode.ExtensionContext) {
   console.log("插件启动");
-  let command = vscode.commands.registerCommand("et.run", () => {
+
+  // 显示信息
+  let show = vscode.commands.registerCommand("et.run", () => {
     const editor = vscode.window.activeTextEditor;
     if (editor) {
       const document = editor.document;
+
+      // 先清除旧的
       arr.forEach((e) => {
         e.decorationType?.dispose();
       });
@@ -51,19 +64,24 @@ export function activate(context: vscode.ExtensionContext) {
             });
         });
       translate(arr.map((x) => x.src)).then((r) => {
-        r.data.trans_result.forEach((x: { src: string; dst: string }) => {
+        r.data.trans_result.forEach((x) => {
           arr
             .filter((x2) => x2.src === x.src)
             .forEach((x2) => {
               x2.dst = x.dst;
               x2.decorationType = vscode.window.createTextEditorDecorationType({
+                isWholeLine: true,
                 after: {
                   contentText: x2.dst,
                   color:
                     x2.type === vscode.DiagnosticSeverity.Error
-                      ? "red"
-                      : "yellow",
-                  margin: "0 0 0 20px",
+                      ? "rgba(235,47,6,1)"
+                      : "rgba(250,152,58,1)",
+                  backgroundColor:
+                    x2.type === vscode.DiagnosticSeverity.Error
+                      ? "rgba(235,47,6,0.2)"
+                      : "rgba(250,152,58,0.2)",
+                  margin: "0 5px 0 5px",
                 },
               });
             });
@@ -81,14 +99,27 @@ export function activate(context: vscode.ExtensionContext) {
       });
     }
   });
-  context.subscriptions.push(command);
+
+  // 隐藏信息
+  let clear = vscode.commands.registerCommand("et.clear", () => {
+    const editor = vscode.window.activeTextEditor;
+    if (editor) {
+      arr.forEach((e) => {
+        e.decorationType?.dispose();
+      });
+      arr = [];
+    }
+  });
+
+  context.subscriptions.push(show);
+  context.subscriptions.push(clear);
 }
 
 function translate(q: Array<string>) {
   const qs = q.join("\n");
   var randomNumber = Math.random().toString().replace(".", "");
   const hash = md5(AppId + qs + randomNumber + AppKey);
-  return axios({
+  return axios<TranslationResult>({
     url: "https://fanyi-api.baidu.com/api/trans/vip/translate",
     method: "post",
     headers: {
