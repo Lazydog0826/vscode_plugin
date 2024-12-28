@@ -1,8 +1,9 @@
 {
   "name": "error-translate",
   "displayName": "ErrorTranslate",
-  "description": "",
-  "version": "0.0.1",
+  "description": "语法错误与警告翻译",
+  "version": "1.0.0",
+  "icon": "icon.png",
   "engines": {
     "vscode": "^1.91.1"
   },
